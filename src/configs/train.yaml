@@ -1,10 +1,10 @@
 defaults:
   - model: baseline
   - writer: wandb
-  - metrics: example
+  - metrics: base_metrics
   - datasets: audio_train
   - dataloader: base_loader
-  - transforms: null
+  - transforms: no_transform
   - _self_
 optimizer:
   _target_: torch.optim.Adam
@@ -14,17 +14,18 @@ lr_scheduler:
   gamma: 0.9
   step_size: ${trainer.epoch_len}
 loss_function:
-  _target_: src.loss.ExampleLoss
+  _target_: src.loss.SiSNRLoss
 trainer:
   log_step: 50
   n_epochs: 100
   epoch_len: 500
-  device_tensors: ["mixed", "source"] # which tensors should be on device (ex. GPU)
+  device_tensors: ["mixture", "sources"] # which tensors should be on device (ex. GPU)
+  max_grad_norm: 5
   resume_from: null # null or path to the checkpoint dir with *.pth and config.yaml
   device: auto # device name or "auto"
   override: True # if True, will override the previous run with the same name
-  monitor: "max test_MulticlassAccuracy" # "off" or "max/min metric_name", i.e. our goal is to maximize/minimize metric
+  monitor: "max val_SiSNR" # "off" or "max/min metric_name", i.e. our goal is to maximize/minimize metric
   save_period: 5 # checkpoint each save_period epochs in addition to the best epoch
   early_stop: ${trainer.n_epochs} # epochs for early stopping
   save_dir: "saved"
-  seed: 1
+  seed: 42

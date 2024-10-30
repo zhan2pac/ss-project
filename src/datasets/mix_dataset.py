@@ -99,6 +99,7 @@ class MixDataset(Dataset):
 
         return {"mixture": mix_wav, "sources": sources}
 
+
     def __len__(self):
         """
         Get length of the dataset (length of the index).

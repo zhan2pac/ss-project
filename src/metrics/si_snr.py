@@ -20,17 +20,15 @@ class SiSNR(BaseMetric):
             device = "cuda" if torch.cuda.is_available() else "cpu"
         self.metric = metric.to(device)
 
-    def __call__(
-        self, preds: torch.Tensor, labels: torch.Tensor, **batch
-    ) -> torch.Tensor:
+    def __call__(self, preds: torch.Tensor, sources: torch.Tensor, **batch) -> torch.Tensor:
         """
         Calculate SI-SNR metric.
 
         Args:
             preds (Tensor): model predictions (..., Time).
-            labels (Tensor): ground-truth audio (..., Time).
+            sources (Tensor): ground-truth audio (..., Time).
         Returns:
             metrics (Tensor): calculated SI-SNR.
         """
 
-        return self.metric(preds, labels)
+        return self.metric(preds, sources)

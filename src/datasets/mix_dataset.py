@@ -95,9 +95,10 @@ class MixDataset(Dataset):
             s1_wav = audio_transform(s1_wav)
             s2_wav = audio_transform(s2_wav)
 
-        source = torch.stack([s1_wav, s2_wav], dim=1)  # [1, 2, time]
+        sources = torch.stack([s1_wav, s2_wav], dim=1)  # [1, 2, time]
 
-        return dict(mixed=mix_wav, source=source)
+        return {"mixture": mix_wav, "sources": sources}
+
 
     def __len__(self):
         """

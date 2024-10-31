@@ -3,8 +3,10 @@ from typing import Optional
 import torch
 from torch import nn
 
+from src.model.rtfs_net.audio_decoder import AudioDecoder
 from src.model.rtfs_net.audio_encoder import AudioEncoder
 from src.model.rtfs_net.caf_block import CAFBlock
+from src.model.rtfs_net.s3_block import S3Block
 
 
 class RTFSNet(nn.Module):
@@ -37,11 +39,19 @@ class RTFSNet(nn.Module):
             hop_length=hop_length,
         )
 
+        self.audio_decoder = AudioDecoder(
+            num_channels=num_audio_channels,
+            n_fft=n_fft,
+            hop_length=hop_length,
+        )
+
         self.caf = CAFBlock(
             num_audio_channels=num_audio_channels,
             num_video_channels=num_video_channels,
             num_heads=num_heads,
         )
+
+        self.s3 = S3Block(num_audio_channels=num_audio_channels)
 
     def forward(self):
         """

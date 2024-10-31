@@ -1,0 +1,6 @@
+_target_: src.model.RTFSNet
+num_audio_channels: 256
+num_video_channels: 512
+num_heads: 4
+n_fft: 256
+hop_length: 128

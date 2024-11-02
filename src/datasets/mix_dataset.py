@@ -97,8 +97,7 @@ class MixDataset(Dataset):
 
         sources = torch.stack([s1_wav, s2_wav], dim=1)  # [1, 2, time]
 
-        return {"mixture": mix_wav, "sources": sources}
-
+        return {"mixture": mix_wav, "sources": sources, "sample_rate": self.target_sr}
 
     def __len__(self):
         """

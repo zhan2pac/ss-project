@@ -1,3 +1,5 @@
+from random import randint
+
 from src.metrics.tracker import MetricTracker
 from src.trainer.base_trainer import BaseTrainer
 
@@ -72,8 +74,19 @@ class Trainer(BaseTrainer):
 
         # logging scheme might be different for different partitions
         if mode == "train":  # the method is called only every self.log_step steps
-            # Log Stuff
-            pass
+            self.log_audio(**batch)
         else:
-            # Log Stuff
-            pass
+            self.log_audio(**batch)
+
+    def log_audio(self, mixture, sources, preds, sample_rate, **batch):
+        idx = randint(0, len(mixture) - 1)
+        gt_mixture = mixture[idx].detach().cpu()
+
+        gt_source1, gt_source2 = sources[idx].detach().cpu().split(1, dim=0)
+        pred_source1, pred_source2 = preds[idx].detach().cpu().split(1, dim=0)
+
+        self.writer.add_audio("ground_truth/mixture", gt_mixture, sample_rate=sample_rate[idx])
+        self.writer.add_audio("ground_truth/source1", gt_source1, sample_rate=sample_rate[idx])
+        self.writer.add_audio("ground_truth/source2", gt_source2, sample_rate=sample_rate[idx])
+        self.writer.add_audio("prediction/source1", pred_source1, sample_rate=sample_rate[idx])
+        self.writer.add_audio("prediction/source2", pred_source2, sample_rate=sample_rate[idx])

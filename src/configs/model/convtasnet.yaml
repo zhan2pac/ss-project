@@ -1,0 +1,12 @@
+_target_: src.model.ConvTasNet
+c_sources: 2
+dim: 512
+length_seg: 16
+bottle_dim: 128
+hidden_dim: 512
+kernel_size: 3
+num_blocks: 8
+num_repeats: 3
+norm: "global_ln"
+causal: False
+masks_act: "sigmoid"

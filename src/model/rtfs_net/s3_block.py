@@ -29,7 +29,7 @@ class S3Block(nn.Module):
 
         self.num_audio_channels = num_audio_channels
 
-    def forward(self, encoded_audio: Tensor, fusion: Tensor):
+    def forward(self, encoded_audio: Tensor, fusion: Tensor) -> Tensor:
         """
         Args:
             encoded_audio (Tensor): encoded audio (B, C, T, F).

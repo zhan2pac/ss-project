@@ -23,7 +23,7 @@ class AudioEncoder(nn.Module):
 
         self.conv = nn.Conv2d(in_channels=2, out_channels=num_audio_channels, kernel_size=3, padding="same")
 
-    def forward(self, audio: Tensor):
+    def forward(self, audio: Tensor) -> Tensor:
         """
         Args:
             audio (Tensor): audio to encode (B, T).

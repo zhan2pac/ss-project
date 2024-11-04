@@ -23,7 +23,7 @@ class AudioDecoder(nn.Module):
 
         self.conv = nn.ConvTranspose2d(in_channels=num_audio_channels, out_channels=2, kernel_size=3, padding="same")
 
-    def forward(self, separated_audio: Tensor, input_size: torch.Size):
+    def forward(self, separated_audio: Tensor, input_size: torch.Size) -> Tensor:
         """
         Args:
             separated_audio (Tensor): audio to encode (B, C, T, F).

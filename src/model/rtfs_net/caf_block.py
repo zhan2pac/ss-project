@@ -59,7 +59,7 @@ class CAFBlock(nn.Module):
     def forward(self, audio: Tensor, video: Tensor):
         """
         Args:
-            audio (Tensor): tensor contains encoded audio (B, C, Ta, Fa).
+            audio (Tensor): tensor contains encoded audio (B, Ca, Ta, F).
             video (Tensor): tensor contains encoded video (B, Cv, Tv).
         Return:
             fusion (Tensor): output fusion tensor(B, Ca, Ta, F).

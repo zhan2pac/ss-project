@@ -1,7 +1,8 @@
 import torch
 from sru import SRU
-from tf_attention import TFAttention
 from torch import Tensor, nn
+
+from src.model.rtfs_net.attention import TFAttention
 
 
 class ChannelNorm(nn.Module):

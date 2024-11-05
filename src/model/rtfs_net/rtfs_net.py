@@ -1,7 +1,7 @@
 from typing import Optional
 
 import torch
-from torch import nn
+from torch import Tensor, nn
 
 from src.model.rtfs_net.audio_decoder import AudioDecoder
 from src.model.rtfs_net.audio_encoder import AudioEncoder
@@ -84,18 +84,19 @@ class RTFSNet(nn.Module):
 
         self.num_rtfs_blocks = num_rtfs_blocks
 
-    def forward(self, mixture, video, **batch):
+    def _forward(self, audio: Tensor, video: Tensor) -> Tensor:
         """
         Args:
-            mixture (Tensor): mixed audio (batch_size, time).
-            video (Tensor): video for lip reading (batch_size, time, channel, width, height).
+            audio (Tensor): mixed audio (batch_size, 1, time).
+            video (Tensor): video for lip reading (batch_size, 1, time, width, height).
         Returns:
-            output (dict): output dict containing predicted separated sources (batch_size, c_sources, time).
+            output (dict): output predicted separated sources (batch_size, time).
         """
+
         v0 = self.video_encoder(video)
         v1 = self.vp_block(v0)
 
-        a0 = self.audio_encoder(mixture)
+        a0 = self.audio_encoder(audio)
         a1 = self.rtfs_block(a0)
         ar = self.caf(a1, v1)
 
@@ -106,4 +107,20 @@ class RTFSNet(nn.Module):
 
         sources = self.audio_decoder(output)
 
-        return {"preds": sources}
+        return sources
+
+    def forward(self, mixture, video, **batch):
+        """
+        Args:
+            mixture (Tensor): mixed audio (batch_size, time).
+            video (Tensor): video for lip reading (batch_size, c_sources, time, width, height).
+        Returns:
+            output (dict): output dict containing predicted separated sources (batch_size, c_sources, time).
+        """
+        _, c_sources, _, _, _ = video.shape
+
+        mixture = mixture.unsqueeze(1)
+        video = video.unsqueeze(1)
+        sources = [self._forward(mixture, video[:, :, i]) for i in range(c_sources)]
+
+        return {"preds": torch.stack(sources, dim=1)}

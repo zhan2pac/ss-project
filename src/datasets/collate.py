@@ -16,6 +16,7 @@ def collate_fn(dataset_items: list[dict]):
     result_batch = {}
 
     result_batch["mixture"] = torch.cat([elem["mixture"] for elem in dataset_items], dim=0)  # [batch, time]
+    result_batch["video"] = torch.cat([elem["video"] for elem in dataset_items], dim=0)  # [batch, 2, time, W, H]
     result_batch["sources"] = torch.cat([elem["sources"] for elem in dataset_items], dim=0)  # [batch, 2, time]
     result_batch["sample_rate"] = [elem["sample_rate"] for elem in dataset_items]
 

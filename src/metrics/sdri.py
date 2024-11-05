@@ -20,18 +20,21 @@ class SDRi(BaseMetric):
             device = "cuda" if torch.cuda.is_available() else "cpu"
         self.metric = metric.to(device)
 
-    def __call__(
-        self, inputs: torch.Tensor, preds: torch.Tensor, labels: torch.Tensor, **kwargs
-    ) -> torch.Tensor:
+    def __call__(self, mixture: torch.Tensor, preds: torch.Tensor, sources: torch.Tensor, **kwargs) -> torch.Tensor:
         """
         Calculate SDRi metric.
 
         Args:
-            inputs (Tensor): input mixed audio (..., Time).
-            preds (Tensor): model predictions (..., Time).
-            labels (Tensor): ground-truth audio (..., Time).
+            mixture (Tensor): input mixed audio (B, Time).
+            preds (Tensor): model predictions (B, n_sources, Time).
+            sources (Tensor): ground-truth audio (B, n_sources, Time).
         Returns:
             metrics (Tensor): calculated SDRi.
         """
+        _, n_sources, _ = preds.shape
 
-        return self.metric(preds, labels) - self.metric(inputs, labels)
+        metrics = 0
+        for i in range(n_sources):
+            metrics += self.metric(preds[:, i], sources[:, i]) - self.metric(mixture, sources[:, i])
+
+        return metrics / n_sources

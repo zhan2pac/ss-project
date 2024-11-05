@@ -1,5 +1,6 @@
 import random
 
+import numpy as np
 import torch
 import torchaudio
 from torch.utils.data import Dataset
@@ -42,20 +43,26 @@ class MixDataset(Dataset):
         self.instance_transforms = instance_transforms
 
         if data_dir is None:
-            data_dir = ROOT_PATH / "data" / "dla_dataset" / "audio"
+            data_dir = ROOT_PATH / "data" / "dla_dataset"
             data_dir.mkdir(exist_ok=True, parents=True)
         self._data_dir = data_dir
 
-        dataset_path = self._data_dir / part
+        audio_dataset_path = self._data_dir / "audio" / part
+        video_dataset_path = self._data_dir / "mouths"
 
         index = []
 
-        for i, wav_path in enumerate((dataset_path / "mix").iterdir()):
+        for i, wav_path in enumerate((audio_dataset_path / "mix").iterdir()):
             item = dict()
             item["mix"] = wav_path
+            file_1, file_2 = str(wav_path.stem).split("_")
+
+            item["video_1"] = video_dataset_path / file_1 + ".npz"
+            item["video_2"] = video_dataset_path / file_2 + ".npz"
+
             if part != "test":
-                item["s1"] = dataset_path / "s1" / wav_path.name
-                item["s2"] = dataset_path / "s2" / wav_path.name
+                item["s1"] = audio_dataset_path / "s1" / wav_path.name
+                item["s2"] = audio_dataset_path / "s2" / wav_path.name
 
             index.append(item)
 
@@ -83,8 +90,12 @@ class MixDataset(Dataset):
 
         mix_wav = self.load_audio(item["mix"])  # [1, time]
 
+        video_1 = self.load_video(item["video_1"])  # [1, time, W, H]
+        video_2 = self.load_video(item["video_2"])  # [1, time, W, H]
+        video = torch.stack([video_1, video_2], dim=1)  # [1, 2, time, W, H]
+
         if self.part == "test":
-            return dict(mixed=mix_wav)
+            return {"mixture": mix_wav, "video": video, "sample_rate": self.target_sr}
 
         s1_wav = self.load_audio(item["s1"])
         s2_wav = self.load_audio(item["s2"])
@@ -95,9 +106,13 @@ class MixDataset(Dataset):
             s1_wav = audio_transform(s1_wav)
             s2_wav = audio_transform(s2_wav)
 
+        if self.instance_transforms and "video" in self.instance_transforms.keys():
+            video_transform = self.instance_transforms["video"]
+            video = video_transform(video)
+
         sources = torch.stack([s1_wav, s2_wav], dim=1)  # [1, 2, time]
 
-        return {"mixture": mix_wav, "sources": sources, "sample_rate": self.target_sr}
+        return {"mixture": mix_wav, "sources": sources, "video": video, "sample_rate": self.target_sr}
 
     def __len__(self):
         """
@@ -113,6 +128,12 @@ class MixDataset(Dataset):
         if sr != target_sr:
             audio_tensor = torchaudio.functional.resample(audio_tensor, sr, target_sr)
         return audio_tensor
+
+    def load_video(self, path):
+        video_array = np.load(path)["data"]
+        assert len(video_array.shape) == 3, "Video should have one channel"
+
+        return torch.from_numpy(video_array).unsqueeze(0)  # for consistency
 
     def _shuffle_index(self, index):
         random.seed(42)

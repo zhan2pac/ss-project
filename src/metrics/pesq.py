@@ -22,17 +22,15 @@ class PESQ(BaseMetric):
             device = "cuda" if torch.cuda.is_available() else "cpu"
         self.metric = metric.to(device)
 
-    def __call__(
-        self, preds: torch.Tensor, labels: torch.Tensor, **kwargs
-    ) -> torch.Tensor:
+    def __call__(self, preds: torch.Tensor, sources: torch.Tensor, **batch) -> torch.Tensor:
         """
         Calculate PESQ metric.
 
         Args:
             preds (Tensor): model predictions (..., Time).
-            labels (Tensor): ground-truth audio (..., Time).
+            sources (Tensor): ground-truth audio (..., Time).
         Returns:
             metrics (Tensor): calculated PESQ.
         """
 
-        return self.metric(preds, labels)
+        return self.metric(preds, sources)

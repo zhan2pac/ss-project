@@ -1,12 +1,6 @@
 device: "auto"
 train: []
 inference:
-  - _target_: src.metrics.SiSNR
-    device: ${metrics.device}
-    name: "SI-SNR"
   - _target_: src.metrics.SiSNRi
     device: ${metrics.device}
     name: "SI-SNRi"
-  - _target_: src.metrics.SDRi
-    device: ${metrics.device}
-    name: "SDRi"

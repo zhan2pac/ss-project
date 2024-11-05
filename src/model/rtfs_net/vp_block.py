@@ -24,32 +24,32 @@ class TFAR(nn.Module):
             nn.Conv1d(
                 in_channels=input_size,
                 out_channels=input_size,
-                kernel_size=4,
+                kernel_size=3,
                 groups=input_size,
                 padding="same",
             ),
-            nn.GroupNorm(num_groups=1, num_channels=input_size),
+            nn.BatchNorm1d(num_features=input_size),
             nn.Sigmoid(),
         )
         self.w2 = nn.Sequential(
             nn.Conv1d(
                 in_channels=input_size,
                 out_channels=input_size,
-                kernel_size=4,
+                kernel_size=3,
                 groups=input_size,
                 padding="same",
             ),
-            nn.GroupNorm(num_groups=1, num_channels=input_size),
+            nn.BatchNorm1d(num_features=input_size),
         )
         self.w3 = nn.Sequential(
             nn.Conv1d(
                 in_channels=input_size,
                 out_channels=input_size,
-                kernel_size=4,
+                kernel_size=3,
                 groups=input_size,
                 padding="same",
             ),
-            nn.GroupNorm(num_groups=1, num_channels=input_size),
+            nn.BatchNorm1d(num_features=input_size),
         )
 
     def forward(self, tensor_m: Tensor, tensor_n: Tensor) -> Tensor:
@@ -98,7 +98,7 @@ class VPBlock(nn.Module):
                 nn.Conv1d(
                     in_channels=hidden_dim,
                     out_channels=hidden_dim,
-                    kernel_size=4,
+                    kernel_size=3,
                     stride=2,
                     groups=hidden_dim,
                 )

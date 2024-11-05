@@ -99,10 +99,11 @@ class VPBlock(nn.Module):
                     in_channels=hidden_dim,
                     out_channels=hidden_dim,
                     kernel_size=3,
-                    stride=2,
+                    stride=1 if i == 0 else 2,
                     groups=hidden_dim,
+                    padding="same" if i == 0 else 0,
                 )
-                for _ in range(compression_multiplier)
+                for i in range(compression_multiplier)
             ]
         )
 
@@ -141,7 +142,7 @@ class VPBlock(nn.Module):
         for i, tensor in enumerate(compressed):
             if i == len(compressed) - 1:
                 continue
-            compress = compress + nn.functional.adaptive_avg_pool2d(tensor, compress.size[2:])
+            compress = compress + nn.functional.adaptive_avg_pool1d(tensor, compress.size()[2:])
             # (B, hidden_dim, L / 2^q)
 
         attention = self.attention(compress)  # (B, hidden_dim, L / 2^q)

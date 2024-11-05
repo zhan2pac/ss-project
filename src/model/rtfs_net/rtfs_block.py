@@ -2,44 +2,7 @@ import torch
 from sru import SRU
 from torch import Tensor, nn
 
-from src.model.rtfs_net.attention import TFAttention
-
-
-class ChannelNorm(nn.Module):
-    """
-    Channel normalization
-    """
-
-    def __init__(self, input_dim: torch.Size):
-        """
-        Args:
-            input_dim (torch.Size): input shape.
-        """
-        super(ChannelNorm, self).__init__()
-
-        self.parameter_size = 0
-
-        self.gamma = nn.Parameter(torch.Tensor(*[1, input_dim[0], 1, input_dim[1]], dtype=torch.float32))
-        self.beta = nn.Parameter(torch.Tensor(*[1, input_dim[0], 1, input_dim[1]], dtype=torch.float32))
-        nn.init.ones_(self.gamma)
-        nn.init.zeros_(self.beta)
-
-        self.dim = (1,) if input_dim[1] == 1 else (1, 3)
-
-    def forward(self, x: Tensor) -> Tensor:
-        """
-        Args:
-            x (Tensor): tensor (B, C, T, F).
-        Return:
-            normalized (Tensor): normalized processed (B, C, T, F).
-        """
-
-        mean = x.mean(self.dim, keepdim=True)
-
-        var = torch.sqrt(x.var(self.dim, unbiased=False, keepdim=True) + 1e-5)
-        normalized = ((x - mean) / var) * self.gamma + self.beta
-
-        return normalized
+from src.model.rtfs_net.attention import ChannelNorm, TFAttention
 
 
 class DPRNNBlock(nn.Module):
@@ -195,10 +158,11 @@ class RTFSBlock(nn.Module):
                     in_channels=hidden_dim,
                     out_channels=hidden_dim,
                     kernel_size=4,
-                    stride=2,
+                    stride=1 if i == 0 else 2,
                     groups=hidden_dim,
+                    padding="same" if i == 0 else 1,
                 )
-                for _ in range(compression_multiplier)
+                for i in range(compression_multiplier)
             ]
         )
 
@@ -248,7 +212,7 @@ class RTFSBlock(nn.Module):
         for i, tensor in enumerate(compressed):
             if i == len(compressed) - 1:
                 continue
-            compress = compress + nn.functional.adaptive_avg_pool2d(tensor, compress.size[2:])
+            compress = compress + nn.functional.adaptive_avg_pool2d(tensor, compress.size()[2:])
             # (B, hidden_dim, T / 2^q, F / 2^q)
 
         freq_proc = self.freq_dprnn(compress)  # (B, hidden_dim, T / 2^q, F / 2^q)

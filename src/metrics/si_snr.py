@@ -14,7 +14,7 @@ class SiSNR(BaseMetric):
         """
         super().__init__(*args, **kwargs)
 
-        metric = ScaleInvariantSignalNoiseRatio(*args, **kwargs)
+        metric = ScaleInvariantSignalNoiseRatio()
 
         if device == "auto":
             device = "cuda" if torch.cuda.is_available() else "cpu"

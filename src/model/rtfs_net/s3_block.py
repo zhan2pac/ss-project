@@ -39,10 +39,10 @@ class S3Block(nn.Module):
         """
 
         mask = self.masking(fusion)  # (B, C, T, F)
-        mask_real = mask[:, : self.num_audio_channels // 2 - 1, ...]  # (B, C // 2, T, F)
+        mask_real = mask[:, : self.num_audio_channels // 2, ...]  # (B, C // 2, T, F)
         mask_imag = mask[:, self.num_audio_channels // 2 :, ...]  # (B, C // 2, T, F)
 
-        audio_real = encoded_audio[:, : self.num_audio_channels // 2 - 1, ...]  # (B, C // 2, T, F)
+        audio_real = encoded_audio[:, : self.num_audio_channels // 2, ...]  # (B, C // 2, T, F)
         audio_imag = encoded_audio[:, self.num_audio_channels // 2 :, ...]  # (B, C // 2, T, F)
 
         separated_real = mask_real * audio_real - mask_imag * audio_imag  # (B, C // 2, T, F)

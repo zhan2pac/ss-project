@@ -15,7 +15,7 @@ class STOI(BaseMetric):
         """
         super().__init__(*args, **kwargs)
 
-        metric = ShortTimeObjectiveIntelligibility(fs, *args, **kwargs)
+        metric = ShortTimeObjectiveIntelligibility(fs)
 
         if device == "auto":
             device = "cuda" if torch.cuda.is_available() else "cpu"

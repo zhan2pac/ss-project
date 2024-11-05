@@ -12,7 +12,10 @@ inference:
     name: "SDRi"
   - _target_: src.metrics.PESQ
     device: ${metrics.device}
+    fs: ${datasets.train.target_sr}
+    mode: "wb"
     name: "PESQ"
   - _target_: src.metrics.STOI
     device: ${metrics.device}
+    fs: ${datasets.train.target_sr}
     name: "STOI"

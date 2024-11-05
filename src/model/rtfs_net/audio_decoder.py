@@ -21,7 +21,7 @@ class AudioDecoder(nn.Module):
         self.n_fft = n_fft
         self.hop_length = hop_length
 
-        self.conv = nn.ConvTranspose2d(in_channels=num_audio_channels, out_channels=2, kernel_size=3, padding="same")
+        self.conv = nn.ConvTranspose2d(in_channels=num_audio_channels, out_channels=2, kernel_size=3, padding=1)
 
     def forward(self, separated_audio: Tensor, input_size: torch.Size) -> Tensor:
         """
@@ -31,7 +31,7 @@ class AudioDecoder(nn.Module):
         Return:
             decoded (Tensor): encoded audio (B, L).
         """
-        _, length = input_size
+        length = input_size[-1]
 
         decoded = self.conv(separated_audio)  # (B, 2, T, F)
         decoded = torch.complex(decoded[:, 0], decoded[:, 1]).transpose(1, 2).contiguous()  # (B, F, T)

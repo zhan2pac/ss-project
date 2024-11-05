@@ -1,0 +1,9 @@
+train:
+  _target_: src.datasets.MixDataset
+  part: "train"
+  shuffle_index: true
+  target_sr: 16000
+val:
+  _target_: src.datasets.MixDataset
+  part: "val"
+  target_sr: 16000

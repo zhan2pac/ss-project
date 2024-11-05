@@ -1,4 +1,5 @@
 import random
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -45,6 +46,8 @@ class MixDataset(Dataset):
         if data_dir is None:
             data_dir = ROOT_PATH / "data" / "dla_dataset"
             data_dir.mkdir(exist_ok=True, parents=True)
+        else:
+            data_dir = Path(data_dir).absolute().resolve()
         self._data_dir = data_dir
 
         audio_dataset_path = self._data_dir / "audio" / part
@@ -57,8 +60,8 @@ class MixDataset(Dataset):
             item["mix"] = wav_path
             file_1, file_2 = str(wav_path.stem).split("_")
 
-            item["video_1"] = video_dataset_path / file_1 + ".npz"
-            item["video_2"] = video_dataset_path / file_2 + ".npz"
+            item["video_1"] = video_dataset_path / (file_1 + ".npz")
+            item["video_2"] = video_dataset_path / (file_2 + ".npz")
 
             if part != "test":
                 item["s1"] = audio_dataset_path / "s1" / wav_path.name
@@ -133,7 +136,7 @@ class MixDataset(Dataset):
         video_array = np.load(path)["data"]
         assert len(video_array.shape) == 3, "Video should have one channel"
 
-        return torch.from_numpy(video_array).unsqueeze(0)  # for consistency
+        return torch.from_numpy(video_array).unsqueeze(0).to(torch.float32)  # for consistency
 
     def _shuffle_index(self, index):
         random.seed(42)

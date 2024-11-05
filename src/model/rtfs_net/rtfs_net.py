@@ -49,12 +49,12 @@ class RTFSNet(nn.Module):
         super(RTFSNet, self).__init__()
 
         self.audio_encoder = AudioEncoder(
-            num_channels=num_audio_channels,
+            num_audio_channels=num_audio_channels,
             n_fft=n_fft,
             hop_length=hop_length,
         )
         self.audio_decoder = AudioDecoder(
-            num_channels=num_audio_channels,
+            num_audio_channels=num_audio_channels,
             n_fft=n_fft,
             hop_length=hop_length,
         )
@@ -105,7 +105,7 @@ class RTFSNet(nn.Module):
 
         output = self.s3(a0, ar)
 
-        sources = self.audio_decoder(output)
+        sources = self.audio_decoder(output, audio.size())
 
         return sources
 

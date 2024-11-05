@@ -7,6 +7,7 @@ import torch
 from torch import Tensor, nn
 
 from src.model.rtfs_net.video_model import ResVideoModel
+from src.utils.init_utils import ROOT_PATH
 
 
 class VideoEncoder(nn.Module):
@@ -14,8 +15,9 @@ class VideoEncoder(nn.Module):
     Video encoder block using pre-trained model
     """
 
-    URL = "https://drive.google.com/uc?id=1-tV0zPQ9Bk0xxBwBh00oZTz_KwRlfP2Z"
-    PATH = "data/models/video_model.pth"
+    URL = "https://drive.google.com/uc?id=1vqMpxZ5LzJjg50HlZdj_QFJGm2gQmDUD"
+    DIR = ROOT_PATH / "data/models"
+    PATH = DIR / "video_model.pth"
 
     def __init__(self):
         """
@@ -42,7 +44,7 @@ class VideoEncoder(nn.Module):
         Load pre-trained model
         """
         self._download_model()
-        pretrained_weights = torch.load(self.PATH)["model_state_dict"]
+        pretrained_weights = torch.load(str(self.PATH))["model_state_dict"]
 
         model_dict = self.encoder.state_dict()
         updated_dict = defaultdict()
@@ -60,9 +62,9 @@ class VideoEncoder(nn.Module):
             p.requires_grad = False
 
     def _download_model(self):
-        path = Path(self.PATH).absolute().resolve()
+        path = self.PATH
         if path.exists():
             return
-        path.mkdir(parents=True, exist_ok=True)
+        self.DIR.mkdir(parents=True, exist_ok=True)
 
-        gdown.download(self.URL, path)
+        gdown.download(self.URL, str(path))

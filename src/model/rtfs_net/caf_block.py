@@ -44,7 +44,7 @@ class CAFBlock(nn.Module):
                 kernel_size=1,
                 groups=num_audio_channels,
             ),
-            nn.GroupNorm(num_groups=1, num_channels=num_audio_channels),
+            nn.GroupNorm(num_groups=1, num_channels=num_audio_channels * num_heads),
         )
         self.f2 = nn.Sequential(
             nn.Conv1d(

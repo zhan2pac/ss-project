@@ -16,7 +16,7 @@ class PESQ(BaseMetric):
         """
         super().__init__(*args, **kwargs)
 
-        metric = PerceptualEvaluationSpeechQuality(fs, mode, *args, **kwargs)
+        metric = PerceptualEvaluationSpeechQuality(fs, mode)
 
         if device == "auto":
             device = "cuda" if torch.cuda.is_available() else "cpu"

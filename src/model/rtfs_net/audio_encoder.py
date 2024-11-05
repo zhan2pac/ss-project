@@ -26,13 +26,15 @@ class AudioEncoder(nn.Module):
     def forward(self, audio: Tensor) -> Tensor:
         """
         Args:
-            audio (Tensor): audio to encode (B, T).
+            audio (Tensor): audio to encode (B, C, T).
         Return:
             encoded (Tensor): encoded audio (B, C, T, F).
         """
-        stft = torch.stft(audio, n_fft=self.n_fft, hop_length=self.hop_length, return_complex=True)  # (2, B, F, T)
+        stft = torch.stft(
+            audio.squeeze(1), n_fft=self.n_fft, hop_length=self.hop_length, return_complex=True
+        )  # (2, B, F, T)
 
-        encoded = torch.stack([stft.real, stft.imag], dim=1).transpose(2, 3)  # (B, 2, T, F)
+        encoded = torch.stack([stft.real, stft.imag], dim=1).transpose(2, 3).contiguous()  # (B, 2, T, F)
 
         encoded = self.conv(encoded)  # (B, C, T, F)
 

@@ -14,7 +14,7 @@ class SDRi(BaseMetric):
         """
         super().__init__(*args, **kwargs)
 
-        metric = SignalDistortionRatio(*args, **kwargs)
+        metric = SignalDistortionRatio()
 
         if device == "auto":
             device = "cuda" if torch.cuda.is_available() else "cpu"

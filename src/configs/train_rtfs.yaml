@@ -1,7 +1,7 @@
 defaults:
   - model: rtfs
   - writer: wandb
-  - metrics: all_metrics
+  - metrics: train_metrics
   - datasets: audio_video_train
   - dataloader: base_loader
   - transforms: no_transform

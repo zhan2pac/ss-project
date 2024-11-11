@@ -22,6 +22,7 @@ class BaseTrainer:
         metrics,
         optimizer,
         lr_scheduler,
+        lr_scheduler_plateau,
         config,
         device,
         dataloaders,
@@ -41,6 +42,8 @@ class BaseTrainer:
             optimizer (Optimizer): optimizer for the model.
             lr_scheduler (LRScheduler): learning rate scheduler for the
                 optimizer.
+            lr_scheduler_plateau (LRScheduler): learning rate scheduler for the
+                optimizer using validation score.
             config (DictConfig): experiment config containing training config.
             device (str): device for tensors and model.
             dataloaders (dict[DataLoader]): dataloaders for different
@@ -70,6 +73,7 @@ class BaseTrainer:
         self.criterion = criterion
         self.optimizer = optimizer
         self.lr_scheduler = lr_scheduler
+        self.lr_scheduler_plateau = lr_scheduler_plateau
         self.batch_transforms = batch_transforms
 
         # define dataloaders
@@ -82,9 +86,7 @@ class BaseTrainer:
             self.train_dataloader = inf_loop(self.train_dataloader)
             self.epoch_len = epoch_len
 
-        self.evaluation_dataloaders = {
-            k: v for k, v in dataloaders.items() if k != "train"
-        }
+        self.evaluation_dataloaders = {k: v for k, v in dataloaders.items() if k != "train"}
 
         # define epochs
         self._last_epoch = 0  # required for saving on interruption
@@ -93,12 +95,8 @@ class BaseTrainer:
 
         # configuration to monitor model performance and save best
 
-        self.save_period = (
-            self.cfg_trainer.save_period
-        )  # checkpoint each save_period epochs
-        self.monitor = self.cfg_trainer.get(
-            "monitor", "off"
-        )  # format: "mnt_mode mnt_metric"
+        self.save_period = self.cfg_trainer.save_period  # checkpoint each save_period epochs
+        self.monitor = self.cfg_trainer.get("monitor", "off")  # format: "mnt_mode mnt_metric"
 
         if self.monitor == "off":
             self.mnt_mode = "off"
@@ -131,9 +129,7 @@ class BaseTrainer:
 
         # define checkpoint dir and init everything if required
 
-        self.checkpoint_dir = (
-            ROOT_PATH / config.trainer.save_dir / config.writer.run_name
-        )
+        self.checkpoint_dir = ROOT_PATH / config.trainer.save_dir / config.writer.run_name
 
         if config.trainer.get("resume_from") is not None:
             resume_path = self.checkpoint_dir / config.trainer.resume_from
@@ -176,9 +172,7 @@ class BaseTrainer:
 
             # evaluate model performance according to configured metric,
             # save best checkpoint as model_best
-            best, stop_process, not_improved_count = self._monitor_performance(
-                logs, not_improved_count
-            )
+            best, stop_process, not_improved_count = self._monitor_performance(logs, not_improved_count)
 
             if epoch % self.save_period == 0 or best:
                 self._save_checkpoint(epoch, save_best=best, only_best=True)
@@ -202,9 +196,7 @@ class BaseTrainer:
         self.train_metrics.reset()
         self.writer.set_step((epoch - 1) * self.epoch_len)
         self.writer.add_scalar("epoch", epoch)
-        for batch_idx, batch in enumerate(
-            tqdm(self.train_dataloader, desc="train", total=self.epoch_len)
-        ):
+        for batch_idx, batch in enumerate(tqdm(self.train_dataloader, desc="train", total=self.epoch_len)):
             try:
                 batch = self.process_batch(
                     batch,
@@ -224,13 +216,9 @@ class BaseTrainer:
             if batch_idx % self.log_step == 0:
                 self.writer.set_step((epoch - 1) * self.epoch_len + batch_idx)
                 self.logger.debug(
-                    "Train Epoch: {} {} Loss: {:.6f}".format(
-                        epoch, self._progress(batch_idx), batch["loss"].item()
-                    )
+                    "Train Epoch: {} {} Loss: {:.6f}".format(epoch, self._progress(batch_idx), batch["loss"].item())
                 )
-                self.writer.add_scalar(
-                    "learning rate", self.lr_scheduler.get_last_lr()[0]
-                )
+                self.writer.add_scalar("learning rate", self.lr_scheduler.get_last_lr()[0])
                 self._log_scalars(self.train_metrics)
                 self._log_batch(batch_idx, batch)
                 # we don't want to reset train metrics at the start of every epoch
@@ -275,9 +263,10 @@ class BaseTrainer:
                 )
             self.writer.set_step(epoch * self.epoch_len, part)
             self._log_scalars(self.evaluation_metrics)
-            self._log_batch(
-                batch_idx, batch, part
-            )  # log only the last batch during inference
+            self._log_batch(batch_idx, batch, part)  # log only the last batch during inference
+
+        if self.lr_scheduler_plateau is not None:
+            self.lr_scheduler_plateau.step(**self.evaluation_metrics.result())
 
         return self.evaluation_metrics.result()
 
@@ -312,8 +301,7 @@ class BaseTrainer:
                     improved = False
             except KeyError:
                 self.logger.warning(
-                    f"Warning: Metric '{self.mnt_metric}' is not found. "
-                    "Model performance monitoring is disabled."
+                    f"Warning: Metric '{self.mnt_metric}' is not found. " "Model performance monitoring is disabled."
                 )
                 self.mnt_mode = "off"
                 improved = False
@@ -327,8 +315,7 @@ class BaseTrainer:
 
             if not_improved_count >= self.early_stop:
                 self.logger.info(
-                    "Validation performance didn't improve for {} epochs. "
-                    "Training stops.".format(self.early_stop)
+                    "Validation performance didn't improve for {} epochs. " "Training stops.".format(self.early_stop)
                 )
                 stop_process = True
         return best, stop_process, not_improved_count
@@ -368,9 +355,7 @@ class BaseTrainer:
         transforms = self.batch_transforms.get(transform_type)
         if transforms is not None:
             for transform_name in transforms.keys():
-                batch[transform_name] = transforms[transform_name](
-                    batch[transform_name]
-                )
+                batch[transform_name] = transforms[transform_name](batch[transform_name])
         return batch
 
     def _clip_grad_norm(self):
@@ -379,9 +364,7 @@ class BaseTrainer:
         config.trainer.max_grad_norm
         """
         if self.config["trainer"].get("max_grad_norm", None) is not None:
-            clip_grad_norm_(
-                self.model.parameters(), self.config["trainer"]["max_grad_norm"]
-            )
+            clip_grad_norm_(self.model.parameters(), self.config["trainer"]["max_grad_norm"])
 
     @torch.no_grad()
     def _get_grad_norm(self, norm_type=2):
@@ -525,9 +508,7 @@ class BaseTrainer:
             self.optimizer.load_state_dict(checkpoint["optimizer"])
             self.lr_scheduler.load_state_dict(checkpoint["lr_scheduler"])
 
-        self.logger.info(
-            f"Checkpoint loaded. Resume training from epoch {self.start_epoch}"
-        )
+        self.logger.info(f"Checkpoint loaded. Resume training from epoch {self.start_epoch}")
 
     def _from_pretrained(self, pretrained_path):
         """

@@ -13,6 +13,8 @@ sru
 gdown
 pesq
 pystoi
+sox
+soundfile
 
 black
 isort

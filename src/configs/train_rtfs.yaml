@@ -10,6 +10,8 @@ optimizer:
   _target_: torch.optim.AdamW
   lr: 1e-3
   weight_decay: 1e-1
+lr_scheduler:
+  null
 lr_scheduler_plateau:
   _target_: src.scheduler.ReduceLROnPlateau
   mode: "max"

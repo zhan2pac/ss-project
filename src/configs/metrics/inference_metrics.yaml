@@ -1,0 +1,20 @@
+device: "auto"
+inference:
+  - _target_: src.metrics.SiSNR
+    device: ${metrics.device}
+    name: "SI-SNR"
+  - _target_: src.metrics.SiSNRi
+    device: ${metrics.device}
+    name: "SI-SNRi"
+  - _target_: src.metrics.SDRi
+    device: ${metrics.device}
+    name: "SDRi"
+  - _target_: src.metrics.PESQ
+    device: ${metrics.device}
+    fs: ${datasets.val.target_sr}
+    mode: "nb"
+    name: "PESQ"
+  - _target_: src.metrics.STOI
+    device: ${metrics.device}
+    fs: ${datasets.val.target_sr}
+    name: "STOI"

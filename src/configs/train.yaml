@@ -1,14 +1,14 @@
 defaults:
   - model: convtasnet
   - writer: wandb
-  - metrics: base_metrics
+  - metrics: train_metrics
   - datasets: audio_train
   - dataloader: base_loader
   - transforms: no_transform
   - _self_
 optimizer:
   _target_: torch.optim.Adam
-  lr: 1e-4
+  lr: 1e-3
 lr_scheduler:
   _target_: torch.optim.lr_scheduler.StepLR
   gamma: 0.9
@@ -17,7 +17,7 @@ loss_function:
   _target_: src.loss.SiSNRLoss
 trainer:
   log_step: 250
-  n_epochs: 40
+  n_epochs: 100
   epoch_len: 500
   device_tensors: ["mixture", "sources"] # which tensors should be on device (ex. GPU)
   max_grad_norm: 5

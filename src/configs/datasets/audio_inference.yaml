@@ -1,0 +1,5 @@
+val:
+  _target_: src.datasets.MixDataset
+  part: "val"
+  target_sr: 8000
+  use_video: false

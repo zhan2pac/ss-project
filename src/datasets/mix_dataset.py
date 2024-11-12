@@ -25,6 +25,7 @@ class MixDataset(Dataset):
         shuffle_index=False,
         target_sr=16000,
         instance_transforms=None,
+        use_video: bool = True,
     ):
         """
         Args:
@@ -42,6 +43,7 @@ class MixDataset(Dataset):
         self.part = part
         self.target_sr = target_sr
         self.instance_transforms = instance_transforms
+        self.use_video = use_video
 
         if data_dir is None:
             data_dir = ROOT_PATH / "data" / "dla_dataset"
@@ -93,12 +95,15 @@ class MixDataset(Dataset):
 
         mix_wav = self.load_audio(item["mix"])  # [1, time]
 
-        video_1 = self.load_video(item["video_1"])  # [1, time, W, H]
-        video_2 = self.load_video(item["video_2"])  # [1, time, W, H]
-        video = torch.stack([video_1, video_2], dim=1)  # [1, 2, time, W, H]
+        if self.use_video:
+            video_1 = self.load_video(item["video_1"])  # [1, time, W, H]
+            video_2 = self.load_video(item["video_2"])  # [1, time, W, H]
+            video = torch.stack([video_1, video_2], dim=1)  # [1, 2, time, W, H]
 
         if self.part == "test":
-            return {"mixture": mix_wav, "video": video, "sample_rate": self.target_sr}
+            if self.use_video:
+                return {"mixture": mix_wav, "video": video, "sample_rate": self.target_sr}
+            return {"mixture": mix_wav, "sample_rate": self.target_sr}
 
         s1_wav = self.load_audio(item["s1"])
         s2_wav = self.load_audio(item["s2"])
@@ -115,7 +120,9 @@ class MixDataset(Dataset):
 
         sources = torch.stack([s1_wav, s2_wav], dim=1)  # [1, 2, time]
 
-        return {"mixture": mix_wav, "sources": sources, "video": video, "sample_rate": self.target_sr}
+        if self.use_video:
+            return {"mixture": mix_wav, "sources": sources, "video": video, "sample_rate": self.target_sr}
+        return {"mixture": mix_wav, "sources": sources, "sample_rate": self.target_sr}
 
     def __len__(self):
         """

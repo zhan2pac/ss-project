@@ -1,9 +1,0 @@
-device: "auto"
-train:
-  - _target_: src.metrics.SiSNR
-    device: ${metrics.device}
-    # name: "train_SI-SNR"
-inference:
-  - _target_: src.metrics.SiSNR
-    device: ${metrics.device}
-    # name: "val_SI-SNR"

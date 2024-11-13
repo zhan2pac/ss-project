@@ -64,8 +64,8 @@ class CAFVBlock(nn.Module):
         Return:
             video_fusion (Tensor): output fusion tensor (B, Cv, Tv).
         """
-        B, Ca, Ta, F = audio.shape
-        _, _, Tv = video.shape
+        B, _, _, F = audio.shape
+        _, Cv, Tv = video.shape
 
         a_val = self.p1(audio)  # (B, Cv, Ta, F)
         a_gate = self.p2(audio)  # (B, Cv, Ta, F)
@@ -74,7 +74,7 @@ class CAFVBlock(nn.Module):
         a_gate = nn.functional.interpolate(a_gate, size=(Tv, F), mode="nearest")  # (B, Cv, Tv, F)
 
         vh = self.f1(video)  # (B, Cv * num_heads, Tv)
-        vh = vh.view(B, Ca, self.num_heads, Tv)
+        vh = vh.view(B, Cv, self.num_heads, Tv)
         vm = torch.mean(vh, dim=2, keepdim=False)  # (B, Cv, Tv)
         v_attn = nn.functional.softmax(vm, dim=-1)  # (B, Cv, Tv)
 

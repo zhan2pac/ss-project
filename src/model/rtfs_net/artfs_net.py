@@ -126,9 +126,6 @@ class ARTFSNet(nn.Module):
             v1 = self.video_fusion[i](a1, v1)
             a1 = _a1
 
-            a1 = self.rtfs_block(a0)
-            v1 = self.vp_block(v0)
-
         ar = self.audio_fusion[-1](a1, v1)
 
         for _ in range(self.num_rtfs_blocks):

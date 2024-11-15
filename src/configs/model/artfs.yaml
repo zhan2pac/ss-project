@@ -1,8 +1,8 @@
 _target_: src.model.ARTFSNet
 num_audio_channels: 256
 num_video_channels: 512
-num_rtfs_blocks: 4
-num_caf_blocks: 2
+num_rtfs_blocks: 6
+num_caf_blocks: 4
 hidden_dim: 64
 hidden_dim_rnn: 32
 num_upsample_depth_rtfs: 2

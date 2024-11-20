@@ -9,7 +9,7 @@ from torch.utils.data import Dataset
 from src.utils.io_utils import ROOT_PATH
 
 
-class MixDataset(Dataset):
+class CustomDirDataset(Dataset):
     """
     Base class for the datasets.
 
@@ -20,37 +20,28 @@ class MixDataset(Dataset):
 
     def __init__(
         self,
-        part,
-        data_dir=None,
+        data_dir: str,
         shuffle_index=False,
         target_sr=16000,
         instance_transforms=None,
     ):
         """
         Args:
-            index (list[dict]): list, containing dict for each element of
-                the dataset. The dict has required metadata information,
-                such as label and object path.
-            limit (int | None): if not None, limit the total number of elements
-                in the dataset to 'limit' elements.
+            data_dir (str): path to custom dataset.
             shuffle_index (bool): if True, shuffle the index. Uses python
                 random package with seed 42.
             instance_transforms (dict[Callable] | None): transforms that
                 should be applied on the instance. Depend on the
                 tensor name.
         """
-        self.part = part
         self.target_sr = target_sr
         self.instance_transforms = instance_transforms
 
-        if data_dir is None:
-            data_dir = ROOT_PATH / "data" / "dla_dataset"
-            data_dir.mkdir(exist_ok=True, parents=True)
-        else:
-            data_dir = Path(data_dir).absolute().resolve()
-        self._data_dir = data_dir
+        assert data_dir is not None, "You should provide path to dir"
 
-        audio_dataset_path = self._data_dir / "audio" / part
+        self._data_dir = Path(data_dir).absolute().resolve()
+
+        audio_dataset_path = self._data_dir / "audio"
         video_dataset_path = self._data_dir / "mouths"
 
         index = []
@@ -63,7 +54,7 @@ class MixDataset(Dataset):
             item["video_1"] = video_dataset_path / (file_1 + ".npz")
             item["video_2"] = video_dataset_path / (file_2 + ".npz")
 
-            if part != "test":
+            if (audio_dataset_path / "s1").exists():
                 item["s1"] = audio_dataset_path / "s1" / wav_path.name
                 item["s2"] = audio_dataset_path / "s2" / wav_path.name
 
@@ -97,7 +88,7 @@ class MixDataset(Dataset):
         video_2 = self.load_video(item["video_2"])  # [1, time, W, H]
         video = torch.stack([video_1, video_2], dim=1)  # [1, 2, time, W, H]
 
-        if self.part == "test":
+        if not (self._data_dir / "audio" / "s1").exists():
             return {"mixture": mix_wav, "wav_path": item["mix"], "video": video, "sample_rate": self.target_sr}
 
         s1_wav = self.load_audio(item["s1"])

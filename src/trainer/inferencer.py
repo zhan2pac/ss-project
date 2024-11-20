@@ -1,4 +1,5 @@
 import torch
+import torchaudio
 from tqdm.auto import tqdm
 
 from src.metrics.tracker import MetricTracker
@@ -122,33 +123,28 @@ class Inferencer(BaseTrainer):
         outputs = self.model(**batch)
         batch.update(outputs)
 
-        if metrics is not None:
+        if metrics is not None and "sources" in batch.keys():
             for met in self.metrics["inference"]:
                 metrics.update(met.name, met(**batch))
 
         # Some saving logic. This is an example
         # Use if you need to save predictions on disk
 
-        batch_size = batch["logits"].shape[0]
-        current_id = batch_idx * batch_size
+        batch_size = batch["preds"].shape[0]
+
+        if self.save_path is None:
+            return batch
 
         for i in range(batch_size):
             # clone because of
             # https://github.com/pytorch/pytorch/issues/1995
-            logits = batch["logits"][i].clone()
-            label = batch["labels"][i].clone()
-            pred_label = logits.argmax(dim=-1)
+            preds = batch["preds"][i].clone()
 
-            output_id = current_id + i
+            num_speakers = preds.shape[0]
+            for j in range(num_speakers):
+                audio = preds[j]
 
-            output = {
-                "pred_label": pred_label,
-                "label": label,
-            }
-
-            if self.save_path is not None:
-                # you can use safetensors or other lib here
-                torch.save(output, self.save_path / part / f"output_{output_id}.pth")
+                torchaudio.save(self.save_path / f"s{j + 1}" / batch["wav_path"][i], audio, batch["sample_rate"][i])
 
         return batch
 

@@ -15,7 +15,7 @@ lr_scheduler:
   T_max: 25000
 loss_function:
   _target_: src.loss.SiSNRLoss
-  permutation_invariant_training: false
+  perm_invariant: false
 trainer:
   log_step: 250
   n_epochs: 50

@@ -135,9 +135,9 @@ class ARTFSNet(nn.Module):
 
         sources = self.audio_decoder(output, audio.size())
 
-        return sources
+        return self.peak_normalize_(sources)
 
-    def forward(self, mixture, video, **batch):
+    def forward(self, mixture: Tensor, video: Tensor, **batch) -> Tensor:
         """
         Args:
             mixture (Tensor): mixed audio (batch_size, time).
@@ -152,3 +152,13 @@ class ARTFSNet(nn.Module):
         sources = [self._forward(mixture, video[:, :, i]) for i in range(c_sources)]
 
         return {"preds": torch.stack(sources, dim=1)}
+
+    def peak_normalize_(self, tensor: Tensor) -> Tensor:
+        """
+        https://discuss.pytorch.org/t/how-to-normalize-audio-data-in-pytorch/187709/2
+        Args:
+            tensor (Tensor): audio to normalize (batch_size, time).
+        """
+
+        tensor = tensor - torch.mean(tensor, dim=-1, keepdim=True)
+        return tensor / torch.max(torch.abs(tensor), dim=-1, keepdim=True)

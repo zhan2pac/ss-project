@@ -161,4 +161,4 @@ class ARTFSNet(nn.Module):
         """
 
         tensor = tensor - torch.mean(tensor, dim=-1, keepdim=True)
-        return tensor / torch.max(torch.abs(tensor), dim=-1, keepdim=True)
+        return tensor / torch.max(torch.abs(tensor), dim=-1, keepdim=True)[0]

@@ -15,7 +15,7 @@ from src.utils.io_utils import ROOT_PATH
 warnings.filterwarnings("ignore", category=UserWarning)
 
 
-@hydra.main(version_base=None, config_path="src/configs", config_name="measure_performance")
+@hydra.main(version_base=None, config_path="../configs", config_name="measure_performance")
 def main(config):
     """
     Main script for inference. Instantiates the model, metrics, and
@@ -50,7 +50,7 @@ def main(config):
         skip_model_load=False,
     )
 
-    for batch in dataloaders:
+    for batch in dataloaders[dataloaders.keys()[0]]:
         batch = inferencer.move_batch_to_device(batch)
         batch = inferencer.transform_batch(batch)
         break

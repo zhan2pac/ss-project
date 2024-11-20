@@ -1,6 +1,6 @@
 defaults:
   - model: rtfs
-  - datasets: audio_video_train
+  - datasets: custom_dir_dataset
   - dataloader: one_batch
   - transforms: no_transform
   - _self_

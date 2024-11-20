@@ -14,6 +14,7 @@ gdown
 pesq
 pystoi
 
+torchinfo
 black
 isort
 pre-commit

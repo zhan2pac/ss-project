@@ -4,6 +4,7 @@ import hydra
 import torch
 from hydra.utils import instantiate
 from omegaconf import OmegaConf
+from torchinfo import summary
 
 from src.datasets.data_utils import get_dataloaders
 from src.trainer import Trainer
@@ -41,7 +42,7 @@ def main(config):
     model = instantiate(config.model).to(device)
     if config.trainer.parallel:
         model = torch.nn.DataParallel(model)
-    logger.info(model)
+    summary(model)
 
     # get function handles of loss and metrics
     loss_function = instantiate(config.loss_function).to(device)

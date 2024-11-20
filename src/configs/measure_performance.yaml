@@ -1,0 +1,11 @@
+defaults:
+  - model: rtfs
+  - datasets: audio_video_train
+  - dataloader: one_batch
+  - transforms: no_transform
+  - _self_
+inferencer:
+  device_tensors: ["mixture", "sources", "video"]
+  device: auto # device name or "auto"
+  seed: 42
+  from_pretrained: "saved/model_best.pth" # path to the pretrained model

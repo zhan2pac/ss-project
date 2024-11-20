@@ -15,6 +15,7 @@ pesq
 pystoi
 sox
 soundfile
+thop
 
 black
 isort

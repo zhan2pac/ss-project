@@ -2,6 +2,7 @@ import warnings
 from pathlib import Path
 
 import hydra
+import torch
 import torchaudio
 from hydra.utils import instantiate
 
@@ -28,29 +29,31 @@ def main(config):
     )
 
     save_path = ROOT_PATH / "data" / "saved" / config.save_path
+
+    mix = Path(config.mixture).absolute().resolve()
     s1 = Path(config.ground_truth_1).absolute().resolve()
     s2 = Path(config.ground_truth_2).absolute().resolve()
 
-    for audio_path in s1.iterdir():
-        gt = torchaudio.load(str(audio_path))
-        preds = torchaudio.load(str(save_path / "s1" / str(gt.name)))
+    for s1_path, s2_path in zip(s1.iterdir(), s2.iterdir()):
+        mixture, _ = torchaudio.load(str(mix / s1_path.name))
+        gt1, _ = torchaudio.load(str(s1_path))
+        gt2, _ = torchaudio.load(str(s2_path))
+
+        preds1, _ = torchaudio.load(str(save_path / "s1" / s1_path.name))
+        preds2, _ = torchaudio.load(str(save_path / "s2" / s2_path.name))
 
         for met in metrics["inference"]:
-            metrics.update(met.name, met(preds=preds, sources=gt))
-
-    for audio_path in s2.iterdir():
-        gt = torchaudio.load(str(audio_path))
-        preds = torchaudio.load(str(save_path / "s2" / str(gt.name)))
-
-        for met in metrics["inference"]:
-            metrics.update(met.name, met(preds=preds, sources=gt))
+            evaluation_metrics.update(
+                met.name,
+                met(
+                    preds=torch.stack([preds1, preds2], dim=1), sources=torch.stack([gt1, gt2], dim=1), mixture=mixture
+                ),
+            )
 
     logs = evaluation_metrics.result()
 
     for part in logs.keys():
-        for key, value in logs[part].items():
-            full_key = part + "_" + key
-            print(f"    {full_key:15s}: {value}")
+        print(f"    {part:15s}: {logs[part].item()}")
 
 
 if __name__ == "__main__":

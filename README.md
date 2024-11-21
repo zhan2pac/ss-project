@@ -30,7 +30,7 @@ If you want to inference model on custom dataset run following command.
 
 ```bash
 python3 inference.py -cn=inference \
-datasets.inference.dataset_dir=PATH_TO_CUSTOM_DATASET \
+datasets.inference.data_dir=PATH_TO_CUSTOM_DATASET \
 inferencer.save_path=SAVE_FOLDER \
 inferencer.from_pretrained=PATH_TO_MODEL \
 metrics.audio_only=IS_AUDIO_ONLY_MODEL
@@ -44,7 +44,8 @@ To calculate metrics run command.
 
 ```bash
 python3 calc_metrics.py -cn=calc_metrics \
-saved_dir=SAVE_FOLDER \
+save_path=SAVE_FOLDER \
+mixture=PATH_TO_MIX \
 ground_truth_1=PATH_TO_S1 \
 ground_truth_2=PATH_TO_S2 \
 metrics.audio_only=IS_AUDIO_ONLY_MODEL
@@ -57,7 +58,7 @@ You can calculate MACs, inference time, number of parameters, etc by running the
 ```bash
 python3 measure_resources.py -cn=measure_resources \
 model=MODEL_NAME \
-datasets.inference.dataset_dir=PATH_TO_CUSTOM_DATASET \
+datasets.inference.data_dir=PATH_TO_CUSTOM_DATASET \
 inferencer.from_pretrained=PATH_TO_MODEL
 ```
 

@@ -1,6 +1,7 @@
 defaults:
   - metrics: all_metrics
   - _self_
-saved_dir: "example"
+save_path: "example"
+mixture: "mix"
 ground_truth_1: "s1"
 ground_truth_2: "s2"

@@ -98,7 +98,7 @@ class MixDataset(Dataset):
         video = torch.stack([video_1, video_2], dim=1)  # [1, 2, time, W, H]
 
         if self.part == "test":
-            return {"mixture": mix_wav, "wav_path": item["mix"], "video": video, "sample_rate": self.target_sr}
+            return {"mixture": mix_wav, "wav_path": item["mix"].name, "video": video, "sample_rate": self.target_sr}
 
         s1_wav = self.load_audio(item["s1"])
         s2_wav = self.load_audio(item["s2"])
@@ -117,7 +117,7 @@ class MixDataset(Dataset):
 
         return {
             "mixture": mix_wav,
-            "wav_path": item["mix"],
+            "wav_path": item["mix"].name,
             "sources": sources,
             "video": video,
             "sample_rate": self.target_sr,

@@ -146,7 +146,11 @@ class Inferencer(BaseTrainer):
             for j in range(num_speakers):
                 audio = preds[j]
 
-                torchaudio.save(self.save_path / f"s{j + 1}" / batch["wav_path"][i], audio, batch["sample_rate"][i])
+                torchaudio.save(
+                    self.save_path / f"s{j + 1}" / batch["wav_path"][i],
+                    audio.unsqueeze(0).to("cpu"),
+                    batch["sample_rate"][i],
+                )
 
         return batch
 

@@ -30,6 +30,7 @@ If you want to inference model on custom dataset run following command.
 
 ```bash
 python3 inference.py -cn=inference \
+model=MODEL_NAME \
 datasets.inference.data_dir=PATH_TO_CUSTOM_DATASET \
 inferencer.save_path=SAVE_FOLDER \
 inferencer.from_pretrained=PATH_TO_MODEL \
@@ -39,6 +40,8 @@ metrics.audio_only=IS_AUDIO_ONLY_MODEL
 Note: `PATH_TO_CUSTOM_DATASET` should contain folders `audio` and `mouths`. Folder `audio`
 should contain `mix` and may contain `s1` and `s2` folders for ground truth audios.
 Predictions will be saved to `data/saved/SAVE_FOLDER`.
+
+You can view possible `MODEL_NAME` in `src/configs/model` folder.
 
 To calculate metrics run command.
 

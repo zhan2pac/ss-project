@@ -5,6 +5,7 @@ import gdown
 URLS = {
     "https://drive.google.com/uc?id=1EVukddCkHn2V38IElnWnZ-FrEVanjeo8": "saved/rtfs_net.pth",
     "https://drive.google.com/uc?id=1viqbvF_GOkSw2T7hZPCfaDo0fxR6hsSe": "saved/artfs_net.pth",
+    "https://drive.google.com/uc?id=1AAcxbO6_W82t9uLpVPa6YZlALf75aPbl": "saved/final_model.pth",
 }
 
 

@@ -5,7 +5,7 @@ from src.metrics.base_metric import BaseMetric
 
 
 class PESQ(BaseMetric):
-    def __init__(self, fs: int, mode: str, device: str, *args, **kwargs):
+    def __init__(self, fs: int, mode: str, device: str, audio_only: bool, *args, **kwargs):
         """
         Use TorchMetrics PerceptualEvaluationSpeechQuality function inside.
 
@@ -13,6 +13,7 @@ class PESQ(BaseMetric):
             fs (int): sampling frequency, should be 16000 or 8000 (Hz).
             mode (str): 'wb' (wide-band) or 'nb' (narrow-band).
             device (str): device for the metric calculation (and tensors).
+            audio_only (bool): use permute technic to calculate metric.
         """
         super().__init__(*args, **kwargs)
 
@@ -21,6 +22,7 @@ class PESQ(BaseMetric):
         if device == "auto":
             device = "cuda" if torch.cuda.is_available() else "cpu"
         self.metric = metric.to(device)
+        self.audio_only = audio_only
 
     def __call__(self, preds: torch.Tensor, sources: torch.Tensor, **batch) -> torch.Tensor:
         """
@@ -33,4 +35,13 @@ class PESQ(BaseMetric):
             metrics (Tensor): calculated PESQ.
         """
 
-        return self.metric(preds, sources)
+        if self.audio_only:
+            sources_swap = sources[:, [1, 0]]
+            metric_value = torch.max(
+                self.metric(preds, sources),
+                self.metric(preds, sources_swap),
+            )
+        else:
+            metric_value = self.metric(preds, sources)
+
+        return metric_value

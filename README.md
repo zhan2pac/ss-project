@@ -30,9 +30,10 @@ If you want to inference model on custom dataset run following command.
 
 ```bash
 python3 inference.py -cn=inference \
-datasets.dataset_dir=PATH_TO_CUSTOM_DATASET \
+datasets.inference.dataset_dir=PATH_TO_CUSTOM_DATASET \
 inferencer.save_path=SAVE_FOLDER \
-inferencer.from_pretrained=PATH_TO_MODEL
+inferencer.from_pretrained=PATH_TO_MODEL \
+metrics.audio_only=IS_AUDIO_ONLY_MODEL
 ```
 
 Note: `PATH_TO_CUSTOM_DATASET` should contain folders `audio` and `mouths`. Folder `audio`
@@ -42,20 +43,21 @@ Predictions will be saved to `data/saved/SAVE_FOLDER`.
 To calculate metrics run command.
 
 ```bash
-python3 src/scripts/calc_metrics.py -cn=calc_metrics \
+python3 calc_metrics.py -cn=calc_metrics \
 saved_dir=SAVE_FOLDER \
 ground_truth_1=PATH_TO_S1 \
-ground_truth_2=PATH_TO_S2
+ground_truth_2=PATH_TO_S2 \
+metrics.audio_only=IS_AUDIO_ONLY_MODEL
 ```
 
-## Measure Performance
+## Measure Resources Consumption
 
 You can calculate MACs, inference time, number of parameters, etc by running the following command.
 
 ```bash
-python3 src/scripts/measure_performance.py -cn=measure_performance \
+python3 measure_resources.py -cn=measure_resources \
 model=MODEL_NAME \
-datasets.dataset_dir=PATH_TO_CUSTOM_DATASET \
+datasets.inference.dataset_dir=PATH_TO_CUSTOM_DATASET \
 inferencer.from_pretrained=PATH_TO_MODEL
 ```
 

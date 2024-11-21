@@ -15,7 +15,7 @@ from src.utils.io_utils import ROOT_PATH
 warnings.filterwarnings("ignore", category=UserWarning)
 
 
-@hydra.main(version_base=None, config_path="../configs", config_name="measure_performance")
+@hydra.main(version_base=None, config_path="src/configs", config_name="measure_resources")
 def main(config):
     """
     Main script for inference. Instantiates the model, metrics, and
@@ -46,11 +46,12 @@ def main(config):
         device=device,
         dataloaders=dataloaders,
         batch_transforms=batch_transforms,
+        save_path=None,
         metrics=None,
         skip_model_load=False,
     )
 
-    for batch in dataloaders[dataloaders.keys()[0]]:
+    for batch in dataloaders[list(dataloaders.keys())[0]]:
         batch = inferencer.move_batch_to_device(batch)
         batch = inferencer.transform_batch(batch)
         break
@@ -64,7 +65,7 @@ def main(config):
         print("Memory required to inference one batch:", torch.cuda.max_memory_allocated(), "bytes")
         torch.cuda.reset_peak_memory_stats()
 
-    macs, params = profile(model, inputs=(batch,))
+    macs, params = profile(model, inputs=(batch["mixture"], batch["video"]))
     macs, params = clever_format([macs, params], "%.3f")
 
     print("MACs:", macs)

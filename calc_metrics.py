@@ -11,7 +11,7 @@ from src.utils.io_utils import ROOT_PATH
 warnings.filterwarnings("ignore", category=UserWarning)
 
 
-@hydra.main(version_base=None, config_path="../configs", config_name="calc_metrics")
+@hydra.main(version_base=None, config_path="src/configs", config_name="calc_metrics")
 def main(config):
     """
     Main script to calculate metrics.

@@ -1,4 +1,5 @@
 device: "auto"
+audio_only: false
 train: []
 inference:
   - _target_: src.metrics.SiSNR

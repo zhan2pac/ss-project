@@ -16,6 +16,7 @@ pystoi
 sox
 soundfile
 thop
+torchinfo
 
 black
 isort

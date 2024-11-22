@@ -1,5 +1,5 @@
 defaults:
-  - model: convtasnet
+  - model: sepreformer
   - datasets: custom_dir_dataset
   - dataloader: one_batch
   - transforms: no_transform
@@ -8,4 +8,4 @@ inferencer:
   device_tensors: ["mixture", "sources"]
   device: auto # device name or "auto"
   seed: 42
-  from_pretrained: "saved/convtasnet.pth" # path to the pretrained model
+  from_pretrained: "saved/sepreformer_t.pth" # path to the pretrained model

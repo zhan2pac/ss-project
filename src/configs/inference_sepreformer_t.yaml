@@ -1,5 +1,5 @@
 defaults:
-  - model: convtasnet
+  - model: sepreformer
   - metrics: inference_metrics_audio
   - datasets: audio_inference
   - dataloader: base_loader
@@ -10,4 +10,4 @@ inferencer:
   device: auto # device name or "auto"
   save_path: "saved_inference" # any name here, can be a dataset name
   seed: 42
-  from_pretrained: "saved/convtasnet.pth" # path to the pretrained model
+  from_pretrained: "saved/sepreformer_t.pth" # path to the pretrained model

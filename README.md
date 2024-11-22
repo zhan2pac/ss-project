@@ -34,7 +34,7 @@ datasets.inference.data_dir=PATH_TO_CUSTOM_DATASET \
 inferencer.save_path=SAVE_FOLDER
 ```
 
-Where `INFERENCE_CONFIG` is `inference_rtfs`(final model), `inference_artfs` or `inference_convtasnet`.
+Where `INFERENCE_CONFIG` is `inference_rtfs`(final model), `inference_artfs`, `inference_sepreformer_t` or `inference_convtasnet`.
 
 Note: `PATH_TO_CUSTOM_DATASET` should contain folders `audio` and `mouths`. Folder `audio`
 should contain `mix` and may contain `s1` and `s2` folders for ground truth audios.
@@ -62,7 +62,7 @@ python3 measure_resources.py -cn=MEASURE_CONFIG \
 datasets.inference.data_dir=PATH_TO_CUSTOM_DATASET
 ```
 
-Where `MEASURE_CONFIG` is `measure_rtfs`(final model), `measure_artfs` or `measure_convtasnet`.
+Where `MEASURE_CONFIG` is `measure_rtfs`(final model), `measure_artfs`, `measure_sepreformer_t` or `measure_convtasnet`.
 
 ## Credits
 

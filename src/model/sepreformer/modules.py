@@ -98,7 +98,7 @@ class AudioDecoder(nn.Module):
             x (Tensor): output tensor (B, T)
         """
         x = self.conv(x)
-        x = x.squeeze()
+        x = x.squeeze(dim=1)
 
         x_norm = self.peak_normalize(x)
 

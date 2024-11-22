@@ -8,4 +8,5 @@ inferencer:
   device_tensors: ["mixture", "sources"]
   device: auto # device name or "auto"
   seed: 42
+  video_based: false
   from_pretrained: "saved/convtasnet.pth" # path to the pretrained model

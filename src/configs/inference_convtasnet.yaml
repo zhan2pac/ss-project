@@ -2,7 +2,7 @@ defaults:
   - model: convtasnet
   - metrics: inference_metrics_audio
   - datasets: audio_inference
-  - dataloader: base_loader
+  - dataloader: one_batch
   - transforms: no_transform
   - _self_
 inferencer:

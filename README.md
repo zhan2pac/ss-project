@@ -31,6 +31,7 @@ If you want to inference model on custom dataset run following command.
 ```bash
 python3 inference.py -cn=INFERENCE_CONFIG \
 datasets.inference.data_dir=PATH_TO_CUSTOM_DATASET \
+inferencer.from_pretrained=PATH_TO_MODEL \
 inferencer.save_path=SAVE_FOLDER
 ```
 
@@ -59,6 +60,7 @@ You can calculate MACs, inference time, number of parameters, etc by running the
 
 ```bash
 python3 measure_resources.py -cn=MEASURE_CONFIG \
+inferencer.from_pretrained=PATH_TO_MODEL \
 datasets.inference.data_dir=PATH_TO_CUSTOM_DATASET
 ```
 

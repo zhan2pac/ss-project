@@ -15,7 +15,7 @@ from src.utils.io_utils import ROOT_PATH
 warnings.filterwarnings("ignore", category=UserWarning)
 
 
-@hydra.main(version_base=None, config_path="src/configs", config_name="measure_resources")
+@hydra.main(version_base=None, config_path="src/configs", config_name="measure_resources_rtfs")
 def main(config):
     """
     Main script for inference. Instantiates the model, metrics, and
@@ -65,7 +65,10 @@ def main(config):
         print("Memory required to inference one batch:", torch.cuda.max_memory_allocated(), "bytes")
         torch.cuda.reset_peak_memory_stats()
 
-    macs, params = profile(model, inputs=(batch["mixture"], batch["video"]))
+    if config.inferencer.video_based:
+        macs, params = profile(model, inputs=(batch["mixture"], batch["video"]))
+    else:
+        macs, params = profile(model, inputs=(batch["mixture"],))
     macs, params = clever_format([macs, params], "%.3f")
 
     print("MACs:", macs)

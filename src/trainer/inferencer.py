@@ -147,7 +147,7 @@ class Inferencer(BaseTrainer):
                 audio = preds[j]
 
                 torchaudio.save(
-                    self.save_path / f"s{j + 1}" / batch["wav_path"][i],
+                    self.save_path / f"predicted_s{j + 1}" / batch["wav_path"][i],
                     audio.unsqueeze(0).to("cpu"),
                     batch["sample_rate"][i],
                 )

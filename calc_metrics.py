@@ -39,8 +39,8 @@ def main(config):
         gt1, _ = torchaudio.load(str(s1_path))
         gt2, _ = torchaudio.load(str(s2_path))
 
-        preds1, _ = torchaudio.load(str(save_path / "s1" / s1_path.name))
-        preds2, _ = torchaudio.load(str(save_path / "s2" / s2_path.name))
+        preds1, _ = torchaudio.load(str(save_path / "predicted_s1" / s1_path.name))
+        preds2, _ = torchaudio.load(str(save_path / "predicted_s2" / s2_path.name))
 
         for met in metrics["inference"]:
             evaluation_metrics.update(

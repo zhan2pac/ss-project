@@ -1,9 +1,9 @@
 import torch
+import torchaudio
 from tqdm.auto import tqdm
 
 from src.metrics.tracker import MetricTracker
 from src.trainer.base_trainer import BaseTrainer
-from src.utils.io_utils import ROOT_PATH
 
 
 class Inferencer(BaseTrainer):
@@ -52,6 +52,8 @@ class Inferencer(BaseTrainer):
             skip_model_load or config.inferencer.get("from_pretrained") is not None
         ), "Provide checkpoint or set skip_model_load=True"
 
+        self.is_train = False
+
         self.config = config
         self.cfg_trainer = self.config.inferencer
 
@@ -79,8 +81,7 @@ class Inferencer(BaseTrainer):
 
         if not skip_model_load:
             # init model
-            pretrained_path = ROOT_PATH / config.inferencer.from_pretrained
-            self._from_pretrained(pretrained_path)
+            self._from_pretrained(config.inferencer.get("from_pretrained"))
 
     def run_inference(self):
         """
@@ -124,33 +125,32 @@ class Inferencer(BaseTrainer):
         outputs = self.model(**batch)
         batch.update(outputs)
 
-        if metrics is not None:
+        if metrics is not None and "sources" in batch.keys():
             for met in self.metrics["inference"]:
                 metrics.update(met.name, met(**batch))
 
         # Some saving logic. This is an example
         # Use if you need to save predictions on disk
 
-        # batch_size = batch["logits"].shape[0]
-        # current_id = batch_idx * batch_size
+        batch_size = batch["preds"].shape[0]
 
-        # for i in range(batch_size):
-        #     # clone because of
-        #     # https://github.com/pytorch/pytorch/issues/1995
-        #     logits = batch["logits"][i].clone()
-        #     label = batch["labels"][i].clone()
-        #     pred_label = logits.argmax(dim=-1)
+        if self.save_path is None:
+            return batch
 
-        #     output_id = current_id + i
+        for i in range(batch_size):
+            # clone because of
+            # https://github.com/pytorch/pytorch/issues/1995
+            preds = batch["preds"][i].clone()
 
-        #     output = {
-        #         "pred_label": pred_label,
-        #         "label": label,
-        #     }
+            num_speakers = preds.shape[0]
+            for j in range(num_speakers):
+                audio = preds[j]
 
-        #     if self.save_path is not None:
-        #         # you can use safetensors or other lib here
-        #         torch.save(output, self.save_path / part / f"output_{output_id}.pth")
+                torchaudio.save(
+                    self.save_path / f"s{j + 1}" / batch["wav_path"][i],
+                    audio.unsqueeze(0).to("cpu"),
+                    batch["sample_rate"][i],
+                )
 
         return batch
 

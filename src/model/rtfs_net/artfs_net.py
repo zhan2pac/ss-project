@@ -6,14 +6,16 @@ from torch import Tensor, nn
 from src.model.rtfs_net.audio_decoder import AudioDecoder
 from src.model.rtfs_net.audio_encoder import AudioEncoder
 from src.model.rtfs_net.caf_block import CAFBlock
+from src.model.rtfs_net.cafv_block import CAFVBlock
 from src.model.rtfs_net.rtfs_block import RTFSBlock
 from src.model.rtfs_net.s3_block import S3Block
 from src.model.rtfs_net.video_encoder import VideoEncoder
 from src.model.rtfs_net.vp_block import VPBlock
 
 
-class RTFSNet(nn.Module):
+class ARTFSNet(nn.Module):
     """
+    Add video CAF blocks to
     RTFS-Net: Recurrent time-frequency modelling for efficient audio-visual speech separation
     https://arxiv.org/pdf/2309.17189
     """
@@ -23,6 +25,7 @@ class RTFSNet(nn.Module):
         num_audio_channels: int,
         num_video_channels: int,
         num_rtfs_blocks: int,
+        num_caf_blocks: int,
         hidden_dim: int,
         hidden_dim_rnn: int,
         num_upsample_depth_rtfs: int,
@@ -37,6 +40,7 @@ class RTFSNet(nn.Module):
             num_audio_channels (int): number of audio channels.
             num_video_channels (int): number of audio channels.
             num_rtfs_blocks (int): number of rtfs blocks.
+            num_caf_blocks (int): number of caf blocks.
             hidden_dim (int): hidden dim.
             hidden_dim_rnn (int): hidden dim rnn.
             num_upsample_depth_rtfs (int): number of upsampling layers in rtfs.
@@ -46,7 +50,7 @@ class RTFSNet(nn.Module):
             n_freq (int): n_freq.
             hop_length (Optional[int]): the distance between neighboring sliding window frames.
         """
-        super(RTFSNet, self).__init__()
+        super(ARTFSNet, self).__init__()
 
         self.audio_encoder = AudioEncoder(
             num_audio_channels=num_audio_channels,
@@ -66,10 +70,27 @@ class RTFSNet(nn.Module):
             compression_multiplier=num_upsample_depth_vp,
         )
 
-        self.caf = CAFBlock(
-            num_audio_channels=num_audio_channels,
-            num_video_channels=num_video_channels,
-            num_heads=num_heads_caf,
+        self.audio_fusion = nn.ModuleList(
+            [
+                CAFBlock(
+                    num_audio_channels=num_audio_channels,
+                    num_video_channels=num_video_channels,
+                    num_heads=num_heads_caf,
+                    add_skip_connection=True,
+                )
+                for _ in range(num_caf_blocks + 1)
+            ]
+        )
+
+        self.video_fusion = nn.ModuleList(
+            [
+                CAFVBlock(
+                    num_audio_channels=num_audio_channels,
+                    num_video_channels=num_video_channels,
+                    num_heads=num_heads_caf,
+                )
+                for _ in range(num_caf_blocks)
+            ]
         )
 
         self.s3 = S3Block(num_audio_channels=num_audio_channels)
@@ -83,6 +104,7 @@ class RTFSNet(nn.Module):
         )
 
         self.num_rtfs_blocks = num_rtfs_blocks
+        self.num_caf_blocks = num_caf_blocks
 
     def _forward(self, audio: Tensor, video: Tensor) -> Tensor:
         """
@@ -98,7 +120,13 @@ class RTFSNet(nn.Module):
 
         a0 = self.audio_encoder(audio)
         a1 = self.rtfs_block(a0)
-        ar = self.caf(a1, v1)
+
+        for i in range(self.num_caf_blocks):
+            _a1 = self.audio_fusion[i](a1, v1)
+            v1 = self.video_fusion[i](a1, v1)
+            a1 = _a1
+
+        ar = self.audio_fusion[-1](a1, v1)
 
         for _ in range(self.num_rtfs_blocks):
             ar = self.rtfs_block(a0 + ar)

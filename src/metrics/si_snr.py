@@ -7,12 +7,13 @@ from src.metrics.base_metric import BaseMetric
 
 
 class SiSNR(BaseMetric):
-    def __init__(self, device, *args, **kwargs):
+    def __init__(self, device: str, audio_only: bool, *args, **kwargs):
         """
         Use TorchMetrics ScaleInvariantSignalNoiseRatio function inside.
 
         Args:
             device (str): device for the metric calculation (and tensors).
+            audio_only (bool): use permute technic to calculate metric.
         """
         super().__init__(*args, **kwargs)
 
@@ -21,6 +22,7 @@ class SiSNR(BaseMetric):
         if device == "auto":
             device = "cuda" if torch.cuda.is_available() else "cpu"
         self.metric = metric.to(device)
+        self.audio_only = audio_only
 
     def __call__(self, preds: torch.Tensor, sources: torch.Tensor, **batch) -> torch.Tensor:
         """
@@ -32,11 +34,17 @@ class SiSNR(BaseMetric):
         Returns:
             metrics (Tensor): calculated SI-SNR.
         """
-        _, c_sources, _ = preds.shape
 
-        metrics_perm = []
-        for permute in permutations(range(c_sources)):
-            metric = self.metric(preds, sources[:, permute])
-            metrics_perm.append(metric)
+        if self.audio_only:
+            _, c_sources, _ = preds.shape
 
-        return max(metrics_perm)
+            metrics_perm = []
+            for permute in permutations(range(c_sources)):
+                metric = self.metric(preds, sources[:, permute])
+                metrics_perm.append(metric)
+
+            metric_value = max(metrics_perm)
+        else:
+            metric_value = self.metric(preds, sources)
+
+        return metric_value

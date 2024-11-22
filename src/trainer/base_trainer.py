@@ -339,7 +339,8 @@ class BaseTrainer:
                 the dataloader with some of the tensors on the device.
         """
         for tensor_for_device in self.cfg_trainer.device_tensors:
-            batch[tensor_for_device] = batch[tensor_for_device].to(self.device)
+            if tensor_for_device in batch.keys():
+                batch[tensor_for_device] = batch[tensor_for_device].to(self.device)
         return batch
 
     def transform_batch(self, batch):
@@ -515,7 +516,10 @@ class BaseTrainer:
             )
         else:
             self.optimizer.load_state_dict(checkpoint["optimizer"])
-            self.lr_scheduler.load_state_dict(checkpoint["lr_scheduler"])
+            if self.lr_scheduler is not None:
+                self.lr_scheduler.load_state_dict(checkpoint["lr_scheduler"])
+            else:
+                self.lr_scheduler_plateau.load_state_dict(checkpoint["lr_scheduler"])
 
         self.logger.info(f"Checkpoint loaded. Resume training from epoch {self.start_epoch}")
 

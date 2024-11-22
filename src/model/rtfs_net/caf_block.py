@@ -7,16 +7,20 @@ class CAFBlock(nn.Module):
     Cross-Dimensional attention fusion block
     """
 
-    def __init__(self, num_audio_channels: int, num_video_channels: int, num_heads: int):
+    def __init__(
+        self, num_audio_channels: int, num_video_channels: int, num_heads: int, add_skip_connection: bool = False
+    ):
         """
         Args:
             num_audio_channels (int): number of audio channels.
             num_video_channels (int): number of audio channels.
             num_heads (int): number of heads in attention.
+            add_skip_connection (bool): add skip connection to CAF block (default: False).
         """
         super(CAFBlock, self).__init__()
 
         self.num_heads = num_heads
+        self.add_skip_connection = add_skip_connection
 
         self.p1 = nn.Sequential(
             nn.Conv2d(
@@ -82,4 +86,9 @@ class CAFBlock(nn.Module):
         fusion1 = a_val * v_attn.unsqueeze(-1)
         fusion2 = a_gate * v_key.unsqueeze(-1)
 
-        return fusion1 + fusion2
+        fusion = fusion1 + fusion2
+
+        if self.add_skip_connection:
+            fusion = fusion + audio
+
+        return fusion

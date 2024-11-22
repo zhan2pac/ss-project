@@ -1,9 +1,11 @@
+import os
+import time
 import warnings
 
 import hydra
 import torch
 from hydra.utils import instantiate
-from torchinfo import summary
+from thop import clever_format, profile
 
 from src.datasets.data_utils import get_dataloaders
 from src.trainer import Inferencer
@@ -13,7 +15,7 @@ from src.utils.io_utils import ROOT_PATH
 warnings.filterwarnings("ignore", category=UserWarning)
 
 
-@hydra.main(version_base=None, config_path="src/configs", config_name="inference")
+@hydra.main(version_base=None, config_path="src/configs", config_name="measure_resources")
 def main(config):
     """
     Main script for inference. Instantiates the model, metrics, and
@@ -36,16 +38,7 @@ def main(config):
 
     # build model architecture, then print to console
     model = instantiate(config.model).to(device)
-    summary(model)
-
-    # get metrics
-    metrics = instantiate(config.metrics)
-
-    # save_path for model predictions
-    save_path = ROOT_PATH / "data" / "saved" / config.inferencer.save_path
-    save_path.mkdir(exist_ok=True, parents=True)
-    (save_path / "s1").mkdir(exist_ok=True, parents=True)
-    (save_path / "s2").mkdir(exist_ok=True, parents=True)
+    print(model)
 
     inferencer = Inferencer(
         model=model,
@@ -53,17 +46,31 @@ def main(config):
         device=device,
         dataloaders=dataloaders,
         batch_transforms=batch_transforms,
-        save_path=save_path,
-        metrics=metrics,
+        save_path=None,
+        metrics=None,
         skip_model_load=False,
     )
 
-    logs = inferencer.run_inference()
+    for batch in dataloaders[list(dataloaders.keys())[0]]:
+        batch = inferencer.move_batch_to_device(batch)
+        batch = inferencer.transform_batch(batch)
+        break
 
-    for part in logs.keys():
-        for key, value in logs[part].items():
-            full_key = part + "_" + key
-            print(f"    {full_key:15s}: {value}")
+    with torch.no_grad():
+        torch.cuda.reset_peak_memory_stats()
+        start = time.time()
+        _ = model(**batch)
+        end = time.time()
+        print("One batch inference time:", end - start, "s")
+        print("Memory required to inference one batch:", torch.cuda.max_memory_allocated(), "bytes")
+        torch.cuda.reset_peak_memory_stats()
+
+    macs, params = profile(model, inputs=(batch["mixture"], batch["video"]))
+    macs, params = clever_format([macs, params], "%.3f")
+
+    print("MACs:", macs)
+    print("Number of parameters:", params)
+    print("Size of model:", clever_format(os.path.getsize(config.inferencer.get("from_pretrained"))))
 
 
 if __name__ == "__main__":

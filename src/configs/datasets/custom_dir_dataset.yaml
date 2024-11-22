@@ -1,0 +1,5 @@
+inference:
+  _target_: src.datasets.CustomDirDataset
+  data_dir: null
+  target_sr: 16000
+  use_video: true

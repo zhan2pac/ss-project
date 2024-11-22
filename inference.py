@@ -3,6 +3,7 @@ import warnings
 import hydra
 import torch
 from hydra.utils import instantiate
+from torchinfo import summary
 
 from src.datasets.data_utils import get_dataloaders
 from src.trainer import Inferencer
@@ -35,7 +36,7 @@ def main(config):
 
     # build model architecture, then print to console
     model = instantiate(config.model).to(device)
-    print(model)
+    summary(model)
 
     # get metrics
     metrics = instantiate(config.metrics)

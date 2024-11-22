@@ -16,6 +16,7 @@ pystoi
 sox
 soundfile
 
+torchinfo
 black
 isort
 pre-commit

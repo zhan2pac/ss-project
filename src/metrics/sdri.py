@@ -1,3 +1,5 @@
+from itertools import permutations
+
 import torch
 from torchmetrics.audio import SignalDistortionRatio
 
@@ -26,15 +28,17 @@ class SDRi(BaseMetric):
 
         Args:
             mixture (Tensor): input mixed audio (B, Time).
-            preds (Tensor): model predictions (B, n_sources, Time).
-            sources (Tensor): ground-truth audio (B, n_sources, Time).
+            preds (Tensor): model predictions (B, c_sources, Time).
+            sources (Tensor): ground-truth audio (B, c_sources, Time).
         Returns:
             metrics (Tensor): calculated SDRi.
         """
-        _, n_sources, _ = preds.shape
+        _, c_sources, _ = preds.shape
+        mixture = mixture.unsqueeze(1).repeat(1, c_sources, 1)
 
-        metrics = 0
-        for i in range(n_sources):
-            metrics += self.metric(preds[:, i], sources[:, i]) - self.metric(mixture, sources[:, i])
+        metrics_perm = []
+        for permute in permutations(range(c_sources)):
+            metric = self.metric(preds, sources[:, permute]) - self.metric(mixture, sources[:, permute])
+            metrics_perm.append(metric)
 
-        return metrics / n_sources
+        return max(metrics_perm)

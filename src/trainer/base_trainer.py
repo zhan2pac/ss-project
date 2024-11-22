@@ -136,7 +136,8 @@ class BaseTrainer:
             self._resume_checkpoint(resume_path)
 
         if config.trainer.get("from_pretrained") is not None:
-            self._from_pretrained(config.trainer.get("from_pretrained"))
+            pretrained_path = ROOT_PATH / config.trainer.from_pretrained
+            self._from_pretrained(pretrained_path)
 
     def train(self):
         """
@@ -224,6 +225,7 @@ class BaseTrainer:
                     if self.lr_scheduler is not None
                     else self.lr_scheduler_plateau.get_last_lr()[0],
                 )
+                self.writer.add_scalar("learning rate", self.lr_scheduler.get_last_lr()[0])
                 self._log_scalars(self.train_metrics)
                 self._log_batch(batch_idx, batch)
                 # we don't want to reset train metrics at the start of every epoch

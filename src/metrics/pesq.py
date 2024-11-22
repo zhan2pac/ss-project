@@ -1,3 +1,5 @@
+from itertools import permutations
+
 import torch
 from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
 
@@ -32,5 +34,11 @@ class PESQ(BaseMetric):
         Returns:
             metrics (Tensor): calculated PESQ.
         """
+        _, c_sources, _ = preds.shape
 
-        return self.metric(preds, sources)
+        metrics_perm = []
+        for permute in permutations(range(c_sources)):
+            metric = self.metric(preds, sources[:, permute])
+            metrics_perm.append(metric)
+
+        return max(metrics_perm)

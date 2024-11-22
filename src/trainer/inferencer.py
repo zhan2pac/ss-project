@@ -3,6 +3,7 @@ from tqdm.auto import tqdm
 
 from src.metrics.tracker import MetricTracker
 from src.trainer.base_trainer import BaseTrainer
+from src.utils.io_utils import ROOT_PATH
 
 
 class Inferencer(BaseTrainer):
@@ -78,7 +79,8 @@ class Inferencer(BaseTrainer):
 
         if not skip_model_load:
             # init model
-            self._from_pretrained(config.inferencer.get("from_pretrained"))
+            pretrained_path = ROOT_PATH / config.inferencer.from_pretrained
+            self._from_pretrained(pretrained_path)
 
     def run_inference(self):
         """
@@ -129,26 +131,26 @@ class Inferencer(BaseTrainer):
         # Some saving logic. This is an example
         # Use if you need to save predictions on disk
 
-        batch_size = batch["logits"].shape[0]
-        current_id = batch_idx * batch_size
+        # batch_size = batch["logits"].shape[0]
+        # current_id = batch_idx * batch_size
 
-        for i in range(batch_size):
-            # clone because of
-            # https://github.com/pytorch/pytorch/issues/1995
-            logits = batch["logits"][i].clone()
-            label = batch["labels"][i].clone()
-            pred_label = logits.argmax(dim=-1)
+        # for i in range(batch_size):
+        #     # clone because of
+        #     # https://github.com/pytorch/pytorch/issues/1995
+        #     logits = batch["logits"][i].clone()
+        #     label = batch["labels"][i].clone()
+        #     pred_label = logits.argmax(dim=-1)
 
-            output_id = current_id + i
+        #     output_id = current_id + i
 
-            output = {
-                "pred_label": pred_label,
-                "label": label,
-            }
+        #     output = {
+        #         "pred_label": pred_label,
+        #         "label": label,
+        #     }
 
-            if self.save_path is not None:
-                # you can use safetensors or other lib here
-                torch.save(output, self.save_path / part / f"output_{output_id}.pth")
+        #     if self.save_path is not None:
+        #         # you can use safetensors or other lib here
+        #         torch.save(output, self.save_path / part / f"output_{output_id}.pth")
 
         return batch
 

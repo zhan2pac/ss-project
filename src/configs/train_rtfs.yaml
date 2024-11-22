@@ -19,7 +19,7 @@ lr_scheduler_plateau:
   patience: 5
 loss_function:
   _target_: src.loss.SiSNRLoss
-  permutation_invariant_training: false
+  perm_invariant: false
 trainer:
   log_step: 250
   n_epochs: 500

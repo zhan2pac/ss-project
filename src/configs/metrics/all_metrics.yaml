@@ -3,10 +3,10 @@ train: []
 inference:
   - _target_: src.metrics.SiSNR
     device: ${metrics.device}
-    name: "SI-SNR"
+    name: "SI_SNR"
   - _target_: src.metrics.SiSNRi
     device: ${metrics.device}
-    name: "SI-SNRi"
+    name: "SI_SNRi"
   - _target_: src.metrics.SDRi
     device: ${metrics.device}
     name: "SDRi"

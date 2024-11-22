@@ -3,4 +3,4 @@ train: []
 inference:
   - _target_: src.metrics.SiSNRi
     device: ${metrics.device}
-    name: "SI-SNRi"
+    name: "SI_SNRi"

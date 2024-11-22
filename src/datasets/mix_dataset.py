@@ -131,7 +131,7 @@ class MixDataset(Dataset):
         return len(self._index)
 
     def load_audio(self, path):
-        audio_tensor, sr = torchaudio.load(path)
+        audio_tensor, sr = torchaudio.load(str(path))
         assert audio_tensor.size(0) == 1, "Audio should have one channel"
 
         target_sr = self.target_sr

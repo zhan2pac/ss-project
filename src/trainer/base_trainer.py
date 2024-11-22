@@ -22,6 +22,7 @@ class BaseTrainer:
         metrics,
         optimizer,
         lr_scheduler,
+        lr_scheduler_plateau,
         config,
         device,
         dataloaders,
@@ -41,6 +42,8 @@ class BaseTrainer:
             optimizer (Optimizer): optimizer for the model.
             lr_scheduler (LRScheduler): learning rate scheduler for the
                 optimizer.
+            lr_scheduler_plateau (LRScheduler): learning rate scheduler for the
+                optimizer using validation score.
             config (DictConfig): experiment config containing training config.
             device (str): device for tensors and model.
             dataloaders (dict[DataLoader]): dataloaders for different
@@ -70,6 +73,7 @@ class BaseTrainer:
         self.criterion = criterion
         self.optimizer = optimizer
         self.lr_scheduler = lr_scheduler
+        self.lr_scheduler_plateau = lr_scheduler_plateau
         self.batch_transforms = batch_transforms
 
         # define dataloaders
@@ -215,6 +219,12 @@ class BaseTrainer:
                 self.logger.debug(
                     "Train Epoch: {} {} Loss: {:.6f}".format(epoch, self._progress(batch_idx), batch["loss"].item())
                 )
+                self.writer.add_scalar(
+                    "learning rate",
+                    self.lr_scheduler.get_last_lr()[0]
+                    if self.lr_scheduler is not None
+                    else self.lr_scheduler_plateau.get_last_lr()[0],
+                )
                 self.writer.add_scalar("learning rate", self.lr_scheduler.get_last_lr()[0])
                 self._log_scalars(self.train_metrics)
                 self._log_batch(batch_idx, batch)
@@ -261,6 +271,9 @@ class BaseTrainer:
             self.writer.set_step(epoch * self.epoch_len, part)
             self._log_scalars(self.evaluation_metrics)
             self._log_batch(batch_idx, batch, part)  # log only the last batch during inference
+
+        if self.lr_scheduler_plateau is not None:
+            self.lr_scheduler_plateau.step(**self.evaluation_metrics.result())
 
         return self.evaluation_metrics.result()
 
@@ -445,7 +458,9 @@ class BaseTrainer:
             "epoch": epoch,
             "state_dict": self.model.state_dict(),
             "optimizer": self.optimizer.state_dict(),
-            "lr_scheduler": self.lr_scheduler.state_dict(),
+            "lr_scheduler": self.lr_scheduler.state_dict()
+            if self.lr_scheduler is not None
+            else self.lr_scheduler_plateau.state_dict(),
             "monitor_best": self.mnt_best,
             "config": self.config,
         }

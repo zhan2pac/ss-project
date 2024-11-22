@@ -1,5 +1,5 @@
 defaults:
-  - metrics: inference_metrics
+  - metrics: inference_metrics_audio
   - _self_
 save_path: "example"
 mixture: "mix"

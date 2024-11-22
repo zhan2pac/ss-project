@@ -1,0 +1,11 @@
+defaults:
+  - model: convtasnet
+  - datasets: custom_dir_dataset
+  - dataloader: one_batch
+  - transforms: no_transform
+  - _self_
+inferencer:
+  device_tensors: ["mixture", "sources"]
+  device: auto # device name or "auto"
+  seed: 42
+  from_pretrained: "saved/convtasnet_100epoch/model_best.pth" # path to the pretrained model

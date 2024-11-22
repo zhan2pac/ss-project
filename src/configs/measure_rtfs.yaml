@@ -1,6 +1,5 @@
 defaults:
   - model: rtfs
-  - metrics: inference_metrics
   - datasets: custom_dir_dataset
   - dataloader: one_batch
   - transforms: no_transform
@@ -8,6 +7,5 @@ defaults:
 inferencer:
   device_tensors: ["mixture", "sources", "video"]
   device: auto # device name or "auto"
-  save_path: "rtfs" # any name here, can be a dataset name
   seed: 42
   from_pretrained: "saved/final_model.pth" # path to the pretrained model

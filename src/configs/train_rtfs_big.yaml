@@ -22,7 +22,7 @@ loss_function:
   permutation_invariant_training: false
 trainer:
   log_step: 250
-  n_epochs: 500
+  n_epochs: 113
   epoch_len: 2000
   device_tensors: ["mixture", "sources", "video"] # which tensors should be on device (ex. GPU)
   max_grad_norm: 5

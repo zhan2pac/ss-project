@@ -12,6 +12,13 @@ from src.utils.io_utils import ROOT_PATH
 warnings.filterwarnings("ignore", category=UserWarning)
 
 
+def load_audio(path, target_sr):
+    audio, sr = torchaudio.load(str(path))
+    if sr != target_sr:
+        audio = torchaudio.functional.resample(audio, sr, target_sr)
+    return audio
+
+
 @hydra.main(version_base=None, config_path="src/configs", config_name="calc_metrics")
 def main(config):
     """
@@ -35,12 +42,12 @@ def main(config):
     s2 = Path(config.ground_truth_2).absolute().resolve()
 
     for s1_path, s2_path in zip(s1.iterdir(), s2.iterdir()):
-        mixture, _ = torchaudio.load(str(mix / s1_path.name))
-        gt1, _ = torchaudio.load(str(s1_path))
-        gt2, _ = torchaudio.load(str(s2_path))
+        mixture = load_audio(str(mix / s1_path.name), config.metrics.fs)
+        gt1 = load_audio(str(s1_path), config.metrics.fs)
+        gt2 = load_audio(str(s2_path), config.metrics.fs)
 
-        preds1, _ = torchaudio.load(str(save_path / "predicted_s1" / s1_path.name))
-        preds2, _ = torchaudio.load(str(save_path / "predicted_s2" / s2_path.name))
+        preds1 = load_audio(str(save_path / "predicted_s1" / s1_path.name), config.metrics.fs)
+        preds2 = load_audio(str(save_path / "predicted_s2" / s2_path.name), config.metrics.fs)
 
         for met in metrics["inference"]:
             evaluation_metrics.update(

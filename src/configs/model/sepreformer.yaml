@@ -1,0 +1,12 @@
+_target_: src.model.SepReformer
+num_spks: 2
+num_stages: 4  # R
+audio_enc_dim: 256  # Fo
+audio_kernel_size: 16  # L
+audio_stride: 4  # H
+feature_dim: 64  # F
+num_heads: 8
+dropout_p: 0.1
+kernel_size: 65
+dconv_kernel_size: 5
+pe_maxlen: 2000
